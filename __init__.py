@@ -1,15 +1,14 @@
 import bpy
 from . import helper, blender_nerf_ui, sof_ui, ttc_ui, cos_ui, sof_operator, ttc_operator, cos_operator
 
-
 # blender info
 bl_info = {
-    'name': 'BlenderNeRF',
+    'name': 'BlenderNeRFGPU',
     'description': 'Easy NeRF synthetic dataset creation within Blender',
     'author': 'Maxime Raafat',
     'version': (5, 0, 0),
     'blender': (3, 0, 0),
-    'location': '3D View > N panel > BlenderNeRF',
+    'location': '3D View > N panel > BlenderNeRFGPU',
     'doc_url': 'https://github.com/maximeraafat/BlenderNeRF',
     'category': 'Object',
 }
@@ -26,7 +25,7 @@ PROPS = [
     ('test_data', bpy.props.BoolProperty(name='Test', description='Construct the testing data', default=True) ),
     ('aabb', bpy.props.IntProperty(name='AABB', description='AABB scale as defined in Instant NGP', default=4, soft_min=1, soft_max=128) ),
     ('render_frames', bpy.props.BoolProperty(name='Render Frames', description='Whether training frames should be rendered. If not selected, only the transforms.json files will be generated', default=True) ),
-    ('logs', bpy.props.BoolProperty(name='Save Log File', description='Whether to create a log file containing information on the BlenderNeRF run', default=False) ),
+    ('logs', bpy.props.BoolProperty(name='Save Log File', description='Whether to create a log file containing information on the BlenderNeRF run', default=True) ),
     ('nerf', bpy.props.BoolProperty(name='NeRF', description='Whether to export the camera transforms.json files in the defaut NeRF file format convention', default=False) ),
     ('save_path', bpy.props.StringProperty(name='Save Path', description='Path to the output directory in which the synthetic dataset will be stored', subtype='DIR_PATH') ),
 
@@ -43,6 +42,9 @@ PROPS = [
     # ttc properties
     ('ttc_dataset_name', bpy.props.StringProperty(name='Name', description='Name of the TTC dataset : the data will be stored under <save path>/<name>', default='dataset') ),
     ('ttc_nb_frames', bpy.props.IntProperty(name='Frames', description='Number of training frames from the training camera', default=100, soft_min=1) ),
+    ('ttc_nb_frames_test', bpy.props.IntProperty(name='Frames Test', description='Number of test frames from the camera traj', default=100, soft_min=1) ),
+    ('ttc_train_step', bpy.props.IntProperty(name='Step Train', description='Frame step N for the captured training frames. Every N-th frame will be used for training NeRF', default=5, soft_min=1) ),
+    ('ttc_test_step', bpy.props.IntProperty(name='Step Test', description='Frame step N for the captured training frames. Every N-th frame will be used for training NeRF', default=5, soft_min=1) ),
     ('camera_train_target', bpy.props.PointerProperty(type=bpy.types.Object, name=TRAIN_CAM, description='Pointer to the training camera', poll=helper.poll_is_camera) ),
     ('camera_test_target', bpy.props.PointerProperty(type=bpy.types.Object, name=TEST_CAM, description='Pointer to the testing camera', poll=helper.poll_is_camera) ),
 

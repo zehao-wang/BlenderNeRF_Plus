@@ -38,10 +38,10 @@ class SubsetOfFrames(blender_nerf_operator.BlenderNeRF_Operator):
         scene.init_frame_step = scene.frame_step
         scene.init_output_path = scene.render.filepath
 
-        if scene.test_data:
-            # testing transforms
-            output_data['frames'] = self.get_camera_extrinsics(scene, camera, mode='TEST', method='SOF')
-            self.save_json(output_path, 'transforms_test.json', output_data)
+        # if scene.test_data:
+        #     # testing transforms
+        #     output_data['frames'] = self.get_camera_extrinsics(scene, camera, mode='TEST', method='SOF')
+        #     self.save_json(output_path, 'transforms_test.json', output_data)
 
         if scene.train_data:
             # training transforms
@@ -55,12 +55,12 @@ class SubsetOfFrames(blender_nerf_operator.BlenderNeRF_Operator):
                 scene.rendering = (True, False, False)
                 scene.frame_step = scene.train_frame_steps # update frame step
                 scene.render.filepath = os.path.join(output_train, '') # training frames path
-                bpy.ops.render.render('INVOKE_DEFAULT', animation=True, write_still=True) # render scene
+                bpy.ops.render.render(animation=True, write_still=True) # render scene
 
         # if frames are rendered, the below code is executed by the handler function
-        if not any(scene.rendering):
-            # compress dataset and remove folder (only keep zip)
-            shutil.make_archive(output_path, 'zip', output_path) # output filename = output_path
-            shutil.rmtree(output_path)
+        # if not any(scene.rendering):
+        #     # compress dataset and remove folder (only keep zip)
+        #     shutil.make_archive(output_path, 'zip', output_path) # output filename = output_path
+        #     shutil.rmtree(output_path)
 
         return {'FINISHED'}

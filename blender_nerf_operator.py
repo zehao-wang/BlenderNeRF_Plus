@@ -4,6 +4,8 @@ import json
 import datetime
 import bpy
 
+def clear_gpu_cache():
+    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
 # global addon script variables
 OUTPUT_TRAIN = 'train'
@@ -86,10 +88,20 @@ class BlenderNeRF_Operator(bpy.types.Operator):
 
         initFrame = scene.frame_current
         step = scene.train_frame_steps if (mode == 'TRAIN' and method == 'SOF') else scene.frame_step
+        if method == 'TTC':
+            if mode == "TRAIN":
+                step = scene.ttc_train_step
+            else:
+                step = scene.ttc_test_step
+
         if (mode == 'TRAIN' and method == 'COS'):
             end = scene.frame_start + scene.cos_nb_frames - 1
-        elif (mode == 'TRAIN' and method == 'TTC'):
-            end = scene.frame_start + scene.ttc_nb_frames - 1
+        # elif (mode == 'TRAIN' and method == 'TTC'):
+        elif method=='TTC':
+            if mode == 'TRAIN':
+                end = scene.frame_start + scene.ttc_nb_frames - 1
+            else:
+                end = scene.frame_start + scene.ttc_nb_frames_test - 1
         else:
             end = scene.frame_end
 
@@ -103,6 +115,54 @@ class BlenderNeRF_Operator(bpy.types.Operator):
                 'file_path': os.path.join(filedir, filename),
                 'transform_matrix': self.listify_matrix( camera.matrix_world )
             }
+
+            camera_extr_dict.append(frame_data)
+
+        scene.frame_set(initFrame) # set back to initial frame
+
+        return camera_extr_dict
+
+    # camera extrinsics (transform matrices)
+    def get_camera_extrinsics_and_render(self, scene, camera, mode='TRAIN', method='SOF', render_root=None):
+        assert mode == 'TRAIN' or mode == 'TEST'
+        assert method == 'SOF' or method == 'TTC' or method == 'COS'
+        assert render_root is not None
+
+        initFrame = scene.frame_current
+        step = scene.train_frame_steps if (mode == 'TRAIN' and method == 'SOF') else scene.frame_step
+        if method == 'TTC':
+            if mode == "TRAIN":
+                step = scene.ttc_train_step
+            else:
+                step = scene.ttc_test_step
+
+        if (mode == 'TRAIN' and method == 'COS'):
+            end = scene.frame_start + scene.cos_nb_frames - 1
+        # elif (mode == 'TRAIN' and method == 'TTC'):
+        elif method=='TTC':
+            if mode == 'TRAIN':
+                end = scene.frame_start + scene.ttc_nb_frames - 1
+            else:
+                end = scene.frame_start + scene.ttc_nb_frames_test - 1
+        else:
+            end = scene.frame_end
+
+        camera_extr_dict = []
+        for frame in range(scene.frame_start, end + 1, step):
+            scene.frame_set(frame)
+            # filename = os.path.basename( scene.render.frame_path(frame=frame) )
+            filename="%05d.png" % (frame)
+
+            filedir = OUTPUT_TRAIN * (mode == 'TRAIN') + OUTPUT_TEST * (mode == 'TEST')
+
+            frame_data = {
+                'file_path': os.path.join(filedir, filename),
+                'transform_matrix': self.listify_matrix( camera.matrix_world )
+            }
+            scene.render.filepath = os.path.join(render_root, filename)
+            bpy.ops.render.render(write_still=True)
+            clear_gpu_cache()
+            scene.render.filepath = ""
 
             camera_extr_dict.append(frame_data)
 
@@ -188,6 +248,8 @@ class BlenderNeRF_Operator(bpy.types.Operator):
         elif method == 'TTC':
             logdata['Train Camera Name'] = scene.camera_train_target.name
             logdata['Test Camera Name'] = scene.camera_test_target.name
+            logdata['Train Frame Step'] = scene.ttc_train_step
+            logdata['TestFrame Step'] = scene.ttc_test_step
             logdata['Frames'] = scene.ttc_nb_frames
             logdata['Dataset Name'] = scene.ttc_dataset_name
 

@@ -86,7 +86,7 @@ class CameraOnSphere(blender_nerf_operator.BlenderNeRF_Operator):
             scene.camera = scene.init_active_camera
 
             # compress dataset and remove folder (only keep zip)
-            shutil.make_archive(output_path, 'zip', output_path) # output filename = output_path
-            shutil.rmtree(output_path)
+            # shutil.make_archive(output_path, 'zip', output_path) # output filename = output_path
+            # shutil.rmtree(output_path)
 
         return {'FINISHED'}
