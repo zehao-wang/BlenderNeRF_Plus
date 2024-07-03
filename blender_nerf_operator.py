@@ -95,29 +95,31 @@ class BlenderNeRF_Operator(bpy.types.Operator):
                 step = scene.ttc_test_step
 
         if (mode == 'TRAIN' and method == 'COS'):
-            end = scene.frame_start + scene.cos_nb_frames - 1
+            # end = scene.frame_start + scene.cos_nb_frames - 1
+            end = scene.cos_nb_frames - 1
         # elif (mode == 'TRAIN' and method == 'TTC'):
         elif method=='TTC':
             if mode == 'TRAIN':
-                end = scene.frame_start + scene.ttc_nb_frames - 1
+                # end = scene.frame_start + scene.ttc_nb_frames - 1
+                end = scene.ttc_nb_frames - 1
             else:
-                end = scene.frame_start + scene.ttc_nb_frames_test - 1
+                # end = scene.frame_start + scene.ttc_nb_frames_test - 1
+                end = scene.ttc_nb_frames_test - 1
         else:
             end = scene.frame_end
 
         camera_extr_dict = []
         for frame in range(scene.frame_start, end + 1, step):
             scene.frame_set(frame)
-            filename = os.path.basename( scene.render.frame_path(frame=frame) )
+            # filename = os.path.basename( scene.render.frame_path(frame=frame) )
+            filename="%05d.png" % (frame)
             filedir = OUTPUT_TRAIN * (mode == 'TRAIN') + OUTPUT_TEST * (mode == 'TEST')
 
             frame_data = {
                 'file_path': os.path.join(filedir, filename),
                 'transform_matrix': self.listify_matrix( camera.matrix_world )
             }
-
             camera_extr_dict.append(frame_data)
-
         scene.frame_set(initFrame) # set back to initial frame
 
         return camera_extr_dict
@@ -137,13 +139,16 @@ class BlenderNeRF_Operator(bpy.types.Operator):
                 step = scene.ttc_test_step
 
         if (mode == 'TRAIN' and method == 'COS'):
-            end = scene.frame_start + scene.cos_nb_frames - 1
+            # end = scene.frame_start + scene.cos_nb_frames - 1
+            end = scene.cos_nb_frames - 1
         # elif (mode == 'TRAIN' and method == 'TTC'):
         elif method=='TTC':
             if mode == 'TRAIN':
-                end = scene.frame_start + scene.ttc_nb_frames - 1
+                # end = scene.frame_start + scene.ttc_nb_frames - 1
+                end = scene.ttc_nb_frames - 1
             else:
-                end = scene.frame_start + scene.ttc_nb_frames_test - 1
+                # end = scene.frame_start + scene.ttc_nb_frames_test - 1
+                end = scene.ttc_nb_frames_test - 1
         else:
             end = scene.frame_end
 
@@ -165,7 +170,6 @@ class BlenderNeRF_Operator(bpy.types.Operator):
             scene.render.filepath = ""
 
             camera_extr_dict.append(frame_data)
-
         scene.frame_set(initFrame) # set back to initial frame
 
         return camera_extr_dict

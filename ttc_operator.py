@@ -58,6 +58,8 @@ class TrainTestCameras(blender_nerf_operator.BlenderNeRF_Operator):
             os.makedirs(output_test, exist_ok=True)
             scene.camera = test_camera
             # scene.render.filepath = os.path.join(output_test, '')
+            output_test_data['frames'] = self.get_camera_extrinsics(scene, test_camera, mode='TEST', method='TTC')
+            self.save_json(output_path, 'transforms_test.json', output_test_data)
             output_test_data['frames'] = self.get_camera_extrinsics_and_render(scene, test_camera, mode='TEST', method='TTC', render_root=output_test)
             self.save_json(output_path, 'transforms_test.json', output_test_data)
 
@@ -94,6 +96,8 @@ class TrainTestCameras(blender_nerf_operator.BlenderNeRF_Operator):
             os.makedirs(output_train, exist_ok=True)
             scene.camera = train_camera
             # scene.render.filepath = os.path.join(output_train, '')
+            output_train_data['frames'] = self.get_camera_extrinsics(scene, train_camera, mode='TRAIN', method='TTC')
+            self.save_json(output_path, 'transforms_train.json', output_train_data)
             output_train_data['frames'] = self.get_camera_extrinsics_and_render(scene, train_camera, mode='TRAIN', method='TTC',  render_root=output_train)
             self.save_json(output_path, 'transforms_train.json', output_train_data)
 
